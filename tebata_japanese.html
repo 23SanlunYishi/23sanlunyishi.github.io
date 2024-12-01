@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>title</title>
+    <style>
+        .start {
+            display: none;
+        }
+        .with-box-shadow {
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .explainwords {
+            display: none;
+        }
+        .num_img {
+            width: 8vw;
+            height: auto;
+        }
+        .numbutton {
+            text-align: center;
+        }
+        #btn {
+            display: inline;
+        }
+        #hojo {
+            color: blue;
+        }
+        #problem {
+            font-size: 30px;
+        }
+    </style>
+    <script>
+        "use strict";
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+        /*
+        ゲームにおいて、問題の出題、正解の判別、などを管理させたい
+        生成時にこの中に収納されている中からランダムに言葉を選び、
+        出題する
+        */
+        let nt_problem_num = 1 //現在の問題位置
+        let nt_random_array = [0,1,2]; //問題のインデックスの元
+        let nt_point = 0; //ゲームでの得点
+        Fisher_Yates_shuffle(nt_random_array); //問題のインデックスを作る
+        const problems_array = [
+            {issue: "こんにちは", answer: [8,1,"/",5,1,"/",6,"/",7,-2,"/",10]},
+            {issue: "さようなら", answer: [1,12,'/',8,6,'/',6,9,'/',1,3,'/',5,9]},
+            {issue: "またあした", answer: [9,5,'/',11,5,'/',9,3,'/',5,7,'/',11,5]}
+        ];
+        let new_tebata = class{
+            //public
+            
+            //private
+            constructor(num) {
+                this.stack_input = []; //数字の入力値
+                this.correct_answer = ""; //正解や不正解を示す文字列を入れる
+                this.problem_num = num; //コンストラクタ生成時にnum問目として指定。問題数以上の数字は入れないこと！
+                this.random_num = nt_random_array[num]; //問題のインデックス
+                this.problem = problems_array[this.random_num]; //問題
+            }
+            
+            add_input_comma(){
+                document.getElementById('input').textContent = this.inputArray.join(',');
+            }
+
+            nt_push(num){
+                this.stack_input.push(num);
+                this.add_input_comma();
+            }
+
+            nt_pop(){
+                this.stack_input.pop();
+                this.add_input_comma();
+            }
+
+            answering(){
+                const outputDiv = document.getElementById("output");
+                const btn = document.getElementById("btn");
+                if(this.stack_input.join(",") == this.problem.answer.join(",")) {
+                    this.correct_answer = "正解です！";
+                    nt_point++;
+                }else{
+                    this.correct_answer = "間違いです。正解は"+this.problem.answer.join(",")+"でした。";
+                }
+                btn.style.display = "inline";
+                determine.style.display = "none";
+                nt_problem_num++;
+                document.getElementById("output").textContent = this.answering;
+            }
+        }
+
+        let t = new new_tebata(0);
+        
+        function Fisher_Yates_shuffle(arr){
+            var a = arr.length;
+            //シャッフルアルゴリズム
+            while (a) {
+                var j = Math.floor( Math.random() * a );
+                var t = arr[--a];
+                arr[a] = arr[j];
+                arr[j] = t;
+            }
+            //シャッフルされた配列の要素を順番に表示する
+            arr.forEach( function( value ) {console.log( value )} );
+        }
+    
+        //次回：new_tebataとnextbottonの新しいやつとの連携をしよう！
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        let tebata = {
+            inputArray: [],
+            count_ja_to_te: 1,
+            length: 0,
+            ja: "",
+            point: 0,
+            key: "", //キーボード入力を記録、カンマでリセット 2024/7/2：なるべく分離したい
+            exam_num: 0,//ランダムで問題表示
+
+            ja_exam: [
+                {issue: "こんにちは", answer: [8,1,"/",5,1,"/",6,"/",7,-2,"/",10]},
+                {issue: "さようなら", answer: [1,12,'/',8,6,'/',6,9,'/',1,3,'/',5,9]},
+                {issue: "またあした", answer: [9,5,'/',11,5,'/',9,3,'/',5,7,'/',11,5]}
+            ],
+
+            te_exam: [
+                {issue: [8,1,"/",5,1,"/",6,"/",7,-2,"/",10], answer: "こんにちは"},
+                {issue: [1,12,'/',8,6,'/',6,9,'/',1,3,'/',5,9], answer: "さようなら"},
+                {issue: [9,5,'/',11,5,'/',9,3,'/',5,7,'/',11,5], answer: "またあした"}
+            ],
+
+            addToInput: function(number) {
+                this.inputArray.push(number);
+                this.updateInputDisplay();
+            },
+
+            delToInput: function() {
+                this.inputArray.pop();
+                this.updateInputDisplay();
+            },
+
+            updateInputDisplay: function() {
+                const inputElement = document.getElementById('input');
+                inputElement.textContent = this.inputArray.join(',');
+            },
+            
+            ja_to_te: function(){
+                const outputDiv = document.getElementById("output");
+                const btn = document.getElementById("btn");
+                if(tebata.inputArray.join(",") == this.ja_exam[this.count_ja_to_te-1].answer.join(",")) {
+                    this.ja = "正解です！";
+                    this.point++;
+                }else{
+                    this.ja = "間違いです。正解は"+this.ja_exam[this.count_ja_to_te-1].answer.join(",")+"でした。";
+                }
+                btn.style.display = "inline";
+                determine.style.display = "none";
+                this.count_ja_to_te++;
+                document.getElementById("output").textContent = tebata.ja;
+                
+            },
+
+            te_to_ja: function(){
+                //未実装
+            }
+
+        };
+        
+        let selection = {
+            state: 3*100, //100は適当な大きい値として置いた
+            locate: 0,
+            select: function(){
+                const se = [
+                    document.getElementById('play'),
+                    document.getElementById('explanation'),
+                    document.getElementById('anotherplay')
+                ];
+
+                if (this.state%3 == 0) {
+                    se[0].classList.add('with-box-shadow');
+                    se[1].classList.remove('with-box-shadow');
+                    se[2].classList.remove('with-box-shadow');
+                    this.state++;
+                    this.locate = 0;
+                } else if(this.state%3 == 1) {
+                    se[0].classList.remove('with-box-shadow');
+                    se[1].classList.add('with-box-shadow');
+                    se[2].classList.remove('with-box-shadow');
+                    this.state++;
+                    this.locate = 1;
+                } else if(this.state%3 == 2) {
+                    se[0].classList.remove('with-box-shadow');
+                    se[1].classList.remove('with-box-shadow');
+                    se[2].classList.add('with-box-shadow');
+                    this.state++;
+                    this.locate = 2;
+                }
+            }
+        };
+
+        let count_nextbtn = 0;
+        let count_explain = 0;
+        function nextbtn(){
+            const start = document.getElementsByClassName('start');//あとは最後までいじらない
+            const explainwords = document.getElementsByClassName("explainwords");//説明文
+            const se = [ //今後戻すことはない
+                document.getElementById("img"),//この位置大事
+                document.getElementById("play"),
+                document.getElementById("anotherplay"),
+                document.getElementById("explanation"),
+                document.getElementById("btn_select")//この位置大事
+            ];
+            const btn = document.getElementById("btn");//毎回使う。
+            const problem = document.getElementById("problem");//毎回使う。
+            const output = document.getElementById("output");//毎回リセットする
+            const hojo = document.getElementById("hojo");//補助的な説明文
+            if(selection.locate == 1){
+                switch(count_explain) {
+                    case 0:
+                        for(let i = 1; i < se.length; i++) {
+                            se[i].style.display = "none";
+                        }
+                        for (let i = 0; i < explainwords.length; i++) {
+                            explainwords[i].style.display = "block";
+                        }
+                        count_explain = 1;
+                        break;
+                    case 1:
+                        for(let i = 1; i < se.length-1; i++) {
+                            se[i].style.display = "block";
+                        }
+                        se[se.length-1].style.display = "inline";
+                        for (let i = 0; i < explainwords.length; i++) {
+                            explainwords[i].style.display = "none";
+                        }
+                        count_explain = 0;
+                        break;
+                }
+            }else if(selection.locate == 0){
+                if(count_nextbtn == 0) {
+                    for(let i = 0; i < se.length; i++) {
+                        se[i].style.display = "none";
+                    }
+                    hojo.innerText = "日本語を手旗の数字で書きましょう。仕様：数字はボタンをクリックかキーボードで入力。10以降の数字はshiftを押しながら数字キーを押す。/は原姿を表し、キーボード入力も可。決定ボタンかキーボードのEnterで答え合わせ。";
+                    for (let i = 0; i < start.length; i++) {
+                        start[i].style.display = "inline"; // または他の適切な値に設定
+                    }
+                }
+                if(count_nextbtn == 3) {
+                    output.style.display = "none";
+                    for (let i = 0; i < start.length; i++) {
+                        start[i].style.display = "none"; // または他の適切な値に設定
+                    }
+                    hojo.style.display = "none";
+                    problem.style.display = "inline";
+                    problem.textContent = "今回の結果は" + String(tebata.point) + "/3でした!";
+                }else{
+                    problem.textContent = "問題" + String(count_nextbtn+1) + ":"+tebata.ja_exam[count_nextbtn].issue;
+                }
+                tebata.ja = "";
+                btn.style.display = "none";
+                determine.style.display = "inline";
+                tebata.inputArray = [];
+                count_nextbtn++;
+                tebata.updateInputDisplay();
+            }else if(selection.locate == 2){
+                problem.style.display = "inline";
+                if(count_nextbtn == 0) {
+                    for(let i = 0; i < se.length; i++) {
+                        se[i].style.display = "none";
+                    }
+                    hojo.innerText = "決定ボタンかキーボードのEnterで答え合わせ。";
+                }
+                if(count_nextbtn == 3) {
+                    output.style.display = "none";
+                    for (let i = 0; i < start.length; i++) {
+                        start[i].style.display = "none"; // または他の適切な値に設定
+                    }
+                    hojo.style.display = "none";
+                    // problem.style.display = "inline";
+                    problem.textContent = "今回の結果は" + String(tebata.point) + "/3でした!";
+                }else{
+                    problem.textContent = "問題" + String(count_nextbtn+1) + ":"+tebata.te_exam[count_nextbtn].issue.join(",");
+                }
+                tebata.ja = "";
+                btn.style.display = "none";
+                determine.style.display = "inline";
+                tebata.inputArray = [];
+                count_nextbtn++;
+                tebata.updateInputDisplay();
+            }
+            output.textContent = tebata.ja;
+        }
+
+        //2逆用
+        let key_minus_pressed = false;
+        let key_two_pressed = false;
+        document.addEventListener('keydown', function(event) {
+        // キーボードのキーが押されたときに呼ばれる関数
+            const keyCode = event.code;
+            if(keyCode == "Enter") {
+                event.preventDefault();
+                if(determine.style.display != "inline"){ //動きが怪しければここをチェック
+                    nextbtn();
+                }else
+                if(determine.style.display == "inline"){
+                    tebata.ja_to_te();
+                }
+            }
+            if(document.getElementById("play").style.display != "none"){
+                switch(keyCode) {
+                    case "ArrowUp":
+                        selection.select();
+                        break;
+                    case "ArrowDown":
+                        selection.select();
+                        break;
+                }
+            }
+            if(selection.locate == 0) {
+                //数字
+                for(let i = 1; i < 10; i++) {
+                    if(keyCode == "Digit"+String(i)) {
+                        tebata.addToInput(i);
+                    }
+                }
+                if(event.shiftKey){
+                    for(let i = 0; i < 5; i++) {
+                        if(keyCode == "Digit" + String(i)) {
+                            if(i != 0) {
+                                tebata.delToInput();
+                            }
+                            tebata.addToInput(10+i);
+                        }
+                    }
+                }
+                //2逆
+                if(event.key === '-') {
+                    key_minus_pressed = true;
+                }else if(event.key === '2'){
+                    key_two_pressed = true;
+                }
+                if(key_minus_pressed && key_two_pressed) {
+                    tebata.delToInput();
+                    tebata.addToInput(-2);
+                }
+                //その他
+                switch(keyCode) {
+                    case "Comma":
+                        tebata.addToInput('/');
+                        break;
+                    case "Slash":
+                        tebata.addToInput('/');
+                        break;
+                    case "Backspace":
+                        tebata.delToInput();
+                        break;
+                }
+            }
+        }, false);
+        //-2用
+        document.addEventListener('keyup', function (event) {
+            if(event.key === '-') {
+                key_minus_pressed = false;
+            }else if(event.key === '2') {
+                key_two_pressed = false;
+            }
+        });
+    </script>
+</head>
+<body>
+    <p>テバタマキ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　<button onclick="window.location.reload()">始めから</button></p>
+    <img id="img" width="400px" height="auto" src="title_little.png">
+    <p id="hojo">上下キーまたは選択ボタンで選んで次へボタンで決定</p>
+    <p id="play">ゲームを始める</p>
+    <p id="explanation">遊び方</p>
+    <p id="anotherplay">手旗から日本語</p>
+    <p class="explainwords">遊び方</p>
+    <p class="explainwords">まず、問題文が表示されるので、それに対応する手旗信号を入れていきます。</p>
+    <p class="explainwords">問題は合計3問あるので頑張ってください。最後に結果が表示されます。</p>
+    <p class="explainwords"><a href="https://polar-stars.com/image/flag_50color.pdf">参考になりそうなサイト</a></p>
+    <p><span class="start" id="problem"></span></p>
+    
+    
+    <div class="numbutton">
+    <button class="start" onclick="tebata.addToInput(1)"><img class="num_img" src="image1.png"></button>
+    <button class="start" onclick="tebata.addToInput(2)"><img class="num_img" src="image2.png"></button>
+    <button class="start" onclick="tebata.addToInput(-2)"><img class="num_img" src="image2rev.png"></button>
+    <button class="start" onclick="tebata.addToInput(3)"><img class="num_img" src="image3.png"></button>
+    <button class="start" onclick="tebata.addToInput(4)"><img class="num_img" src="image4.png"></button>
+    <button class="start" onclick="tebata.addToInput(5)"><img class="num_img" src="image5.png"></button>
+    <button class="start" onclick="tebata.addToInput(6)"><img class="num_img" src="image6.png"></button>
+    <button class="start" onclick="tebata.addToInput(7)"><img class="num_img" src="image7.png"></button>
+    </div>
+    <div class="numbutton">
+    <button class="start" onclick="tebata.addToInput(8)"><img class="num_img" src="image8.png"></button>
+    <button class="start" onclick="tebata.addToInput(9)"><img class="num_img" src="image9.png"></button>
+    <button class="start" onclick="tebata.addToInput(10)"><img class="num_img" src="image10.png"></button>
+    <button class="start" onclick="tebata.addToInput(11)"><img class="num_img" src="image11.png"></button>
+    <button class="start" onclick="tebata.addToInput(12)"><img class="num_img" src="image12.png"></button>
+    <button class="start" onclick="tebata.addToInput(13)"><img class="num_img" src="image13.png"></button>
+    <button class="start" onclick="tebata.addToInput(14)"><img class="num_img" src="image14.png"></button>
+    <button class="start" onclick="tebata.addToInput('/')"><img class="num_img" src="imageslash.png"></button>
+    </div>
+    <p class="start">入力された数字は<span id="input"></span>です。</p><br>
+    <button class="start" onclick="tebata.delToInput()">消す</button>
+    <button id="determine" class="start" onclick="tebata.ja_to_te()">決定</button>
+    <button id="btn" onclick="nextbtn()">次へ</button>
+    <p><span id="output"></span></p>
+    <button id="btn_select" onclick="selection.select()">選択</button>
+</body>
+</html>
